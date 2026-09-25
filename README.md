@@ -36,7 +36,7 @@ A lightweight agent communicates outbound-only to the PatchMon server on your sc
 - **Outbound-only agents** - no inbound firewall changes, no SSH or WinRM exposure, no VPN required.
 - **Single binary, bundled UI** - one Go binary with the React frontend embedded. One container, no Node runtime at deploy time.
 - **Open source, with a managed cloud** - AGPL v3 licensed, free to self-host. Production hosting available at [patchmon.net/cloud](https://patchmon.net/cloud).
-- **Multi-OS by design** - Linux (apt, dnf, yum, apk, pacman), FreeBSD (pkg) and Windows, handled by the same agent and control plane.
+- **Multi-OS by design** - Linux (apt, dnf, yum, zypper, apk, pacman), FreeBSD (pkg) and Windows, handled by the same agent and control plane.
 
 ---
 
@@ -68,7 +68,7 @@ The core of PatchMon - orchestrate updates across your fleet with validation, ap
 | **Approve & Execute** | One-click approval turns a validated dry-run into a real patch run, with a per-host audit trail of who approved what and when. |
 | **Scheduled Patching** | Patch policies decide when updates apply - immediate, maintenance window or delayed rollout. Approve now, execute later. |
 | **Live Patch Streaming** | Watch patch execution in real time from the browser. Agent stdout/stderr is streamed over WebSocket, with the ability to stop a run mid-flight. |
-| **Selective Patching** | Target specific packages, security-only updates or a full upgrade. Works across apt, dnf, yum, apk, pacman and FreeBSD pkg. |
+| **Selective Patching** | Target specific packages, security-only updates or a full upgrade. Works across apt, dnf, yum, zypper, apk, pacman and FreeBSD pkg. |
 | **Patch History & Audit** | Full searchable history of every run - exit code, duration, packages touched, approver and host. |
 
 ![Patching Screenshot](https://raw.githubusercontent.com/PatchMon/PatchMon/main/patching.png)

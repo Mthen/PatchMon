@@ -2342,8 +2342,8 @@ func runPatch(patchRunID, patchType string, packageNames []string, dryRun bool) 
 		return runPatchWindows(ctx, httpClient, patchRunID, patchType, packageNames, dryRun)
 	}
 
-	if pkgManager != "apt" && pkgManager != "dnf" && pkgManager != "yum" && pkgManager != "pkg" && pkgManager != "pacman" {
-		errMsg := fmt.Sprintf("package manager %q not supported for patching (apt, dnf, yum, pkg, pacman required)", pkgManager)
+	if pkgManager != "apt" && pkgManager != "dnf" && pkgManager != "yum" && pkgManager != "zypper" && pkgManager != "pkg" && pkgManager != "pacman" {
+		errMsg := fmt.Sprintf("package manager %q not supported for patching (apt, dnf, yum, zypper, pkg, pacman required)", pkgManager)
 		_ = httpClient.SendPatchOutput(ctx, patchRunID, "failed", "", errMsg)
 		return fmt.Errorf("%s", errMsg)
 	}
@@ -2373,6 +2373,12 @@ func runPatch(patchRunID, patchType string, packageNames []string, dryRun bool) 
 				return fmt.Errorf("freebsd-update not found: %w", err)
 			}
 		}
+	case "zypper":
+		if _, err := exec.LookPath("zypper"); err != nil {
+			_ = httpClient.SendPatchOutput(ctx, patchRunID, "failed", "", "zypper not found: openSUSE package manager not installed")
+			return fmt.Errorf("zypper not found: %w", err)
+		}
+		upgradeBin = "zypper"
 	case "pacman":
 		if _, err := exec.LookPath("pacman"); err != nil {
 			_ = httpClient.SendPatchOutput(ctx, patchRunID, "failed", "", "pacman not found: Arch Linux package manager not installed")
@@ -2460,6 +2466,10 @@ func runPatch(patchRunID, patchType string, packageNames []string, dryRun bool) 
 			if err, abort := runStep(false, "pacman refresh", "pacman -Sy failed: %w", "pacman", "-Sy", "--noconfirm"); abort {
 				stepErr = err
 			}
+		case "zypper":
+			if err, abort := runStep(false, "zypper refresh", "zypper refresh failed: %w", upgradeBin, "refresh"); abort {
+				stepErr = err
+			}
 		default:
 			// -y/--assumeyes accepts new GPG key imports non-interactively.
 			// Without it, dnf prompts "Is this ok [y/N]:" for keys like the
@@ -2510,6 +2520,16 @@ func runPatch(patchRunID, patchType string, packageNames []string, dryRun bool) 
 					if err, abort := runStep(false, "pacman -Syu", "pacman -Syu failed: %w", "pacman", "-Syu", "--noconfirm"); abort {
 						stepErr = err
 					}
+				}
+			case "zypper":
+				args := []string{"update", "--non-interactive"}
+				if dryRun {
+					args = append(args, "--dry-run")
+				} else {
+					args = append(args, "--no-recommends")
+				}
+				if err, abort := runStep(dryRun, "zypper update", "zypper update failed: %w", upgradeBin, args...); abort {
+					stepErr = err
 				}
 			default: // dnf, yum
 				if dryRun {
@@ -2566,6 +2586,17 @@ func runPatch(patchRunID, patchType string, packageNames []string, dryRun bool) 
 					if err, abort := runStep(false, "pacman -S", "pacman -S failed: %w", "pacman", args...); abort {
 						stepErr = err
 					}
+				}
+			case "zypper":
+				args := []string{"update", "--non-interactive"}
+				if dryRun {
+					args = append(args, "--dry-run")
+				} else {
+					args = append(args, "--no-recommends")
+				}
+				args = append(args, packageNames...)
+				if err, abort := runStep(dryRun, "zypper update", "zypper update failed: %w", upgradeBin, args...); abort {
+					stepErr = err
 				}
 			default: // dnf, yum
 				// "install" on an already-installed package is a no-op on

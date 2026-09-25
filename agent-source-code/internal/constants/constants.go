@@ -39,6 +39,7 @@ const (
 	RepoTypeDeb     = "deb"
 	RepoTypeDebSrc  = "deb-src"
 	RepoTypeRPM     = "rpm"
+	RepoTypeZypper  = "zypper"
 	RepoTypeAPK     = "apk"
 	RepoTypePacman  = "pacman"
 	RepoTypeFreeBSD = "freebsd"

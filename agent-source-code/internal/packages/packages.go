@@ -24,6 +24,7 @@ type Manager struct {
 	logger         *logrus.Logger
 	aptManager     *APTManager
 	dnfManager     *DNFManager
+	zypperManager  *ZypperManager
 	apkManager     *APKManager
 	pacmanManager  *PacmanManager
 	freebsdManager *FreeBSDManager
@@ -34,6 +35,7 @@ type Manager struct {
 func New(logger *logrus.Logger, cacheRefresh CacheRefreshConfig) *Manager {
 	aptManager := NewAPTManager(logger, cacheRefresh)
 	dnfManager := NewDNFManager(logger)
+	zypperManager := NewZypperManager(logger)
 	apkManager := NewAPKManager(logger)
 	pacmanManager := NewPacmanManager(logger)
 	freebsdManager := NewFreeBSDManager(logger)
@@ -43,6 +45,7 @@ func New(logger *logrus.Logger, cacheRefresh CacheRefreshConfig) *Manager {
 		logger:         logger,
 		aptManager:     aptManager,
 		dnfManager:     dnfManager,
+		zypperManager:  zypperManager,
 		apkManager:     apkManager,
 		pacmanManager:  pacmanManager,
 		freebsdManager: freebsdManager,
@@ -67,6 +70,8 @@ func (m *Manager) GetPackages() ([]models.Package, error) {
 		pkgs, err = m.aptManager.GetPackages()
 	case "dnf", "yum":
 		pkgs, err = m.dnfManager.GetPackages()
+	case "zypper":
+		pkgs, err = m.zypperManager.GetPackages()
 	case "apk":
 		pkgs, err = m.apkManager.GetPackages()
 	case "pacman":
@@ -85,7 +90,7 @@ func (m *Manager) GetPackages() ([]models.Package, error) {
 }
 
 // DetectPackageManager detects which package manager is available on the system.
-// Returns one of: apt, dnf, yum, apk, pacman, pkg, windows, or unknown.
+// Returns one of: apt, dnf, yum, zypper, apk, pacman, pkg, windows, or unknown.
 func (m *Manager) DetectPackageManager() string {
 	// Check for Windows first (runtime check, no exec)
 	if runtime.GOOS == "windows" {
@@ -120,6 +125,10 @@ func (m *Manager) DetectPackageManager() string {
 	}
 	if _, err := exec.LookPath("apt-get"); err == nil {
 		return "apt"
+	}
+
+	if _, err := exec.LookPath("zypper"); err == nil {
+		return "zypper"
 	}
 
 	// Check for DNF/YUM

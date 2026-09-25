@@ -7,6 +7,7 @@ PatchMon's monitoring agent collects and reports package, system, hardware, and 
 **Linux** (amd64, 386, arm64, arm):
 - Debian / Ubuntu (apt)
 - Fedora / RHEL / CentOS / AlmaLinux / Rocky Linux (dnf)
+- openSUSE Leap / Tumbleweed / SUSE Linux Enterprise (zypper)
 - Arch Linux / Manjaro (pacman)
 - Alpine Linux (apk)
 
@@ -340,6 +341,7 @@ sudo apt update         # Debian/Ubuntu
 sudo dnf check-update   # Fedora/RHEL
 sudo apk update         # Alpine
 sudo pacman -Sy         # Arch
+sudo zypper refresh     # openSUSE / SUSE
 ```
 
 ## Uninstallation
@@ -391,8 +393,8 @@ cmd/patchmon-agent/
 internal/
   config/                       Configuration and credentials management (OS-aware paths)
   client/                       HTTP client for PatchMon API
-  packages/                     Package managers (apt, dnf, pacman, apk, freebsd, windows)
-  repositories/                 Repository detection (apt, dnf, pacman, apk, freebsd, windows)
+  packages/                     Package managers (apt, dnf, zypper, pacman, apk, freebsd, windows)
+  repositories/                 Repository detection (apt, dnf, zypper, pacman, apk, freebsd, windows)
   system/                       OS detection, system info, reboot status
   hardware/                     CPU, RAM, disk info
   network/                      Network interfaces, DNS, gateway

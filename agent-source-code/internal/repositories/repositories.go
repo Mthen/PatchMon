@@ -17,6 +17,7 @@ type Manager struct {
 	logger         *logrus.Logger
 	aptManager     *APTManager
 	dnfManager     *DNFManager
+	zypperManager  *ZypperManager
 	apkManager     *APKManager
 	pacmanManager  *PacmanManager
 	freebsdManager *FreeBSDManager
@@ -29,6 +30,7 @@ func New(logger *logrus.Logger) *Manager {
 		logger:         logger,
 		aptManager:     NewAPTManager(logger),
 		dnfManager:     NewDNFManager(logger),
+		zypperManager:  NewZypperManager(logger),
 		apkManager:     NewAPKManager(logger),
 		pacmanManager:  NewPacmanManager(logger),
 		freebsdManager: NewFreeBSDManager(logger),
@@ -53,6 +55,8 @@ func (m *Manager) GetRepositories() ([]models.Repository, error) {
 		repos, err = m.aptManager.GetRepositories()
 	case "dnf", "yum":
 		repos = m.dnfManager.GetRepositories()
+	case "zypper":
+		repos, err = m.zypperManager.GetRepositories()
 	case "apk":
 		repos, err = m.apkManager.GetRepositories()
 	case "pacman":
@@ -107,6 +111,10 @@ func (m *Manager) detectPackageManager() string {
 	}
 	if _, err := exec.LookPath("apt-get"); err == nil {
 		return "apt"
+	}
+
+	if _, err := exec.LookPath("zypper"); err == nil {
+		return "zypper"
 	}
 
 	// Check for DNF/YUM
